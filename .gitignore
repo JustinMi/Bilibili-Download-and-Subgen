@@ -1,3 +1,4 @@
 *.mp4
 *.srt
 BBDown
+.DS_Store
