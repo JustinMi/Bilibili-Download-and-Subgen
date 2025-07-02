@@ -2,25 +2,19 @@ from faster_whisper import WhisperModel
 import subprocess
 import sys
 
-DOWNLOADED_VIDEO_FILENAME = "downloaded_vid.mp4"
-OUTPUT_SRT_FILENAME = "output.srt"
 
-# Load the model (choose "base", "small", "medium", or "large")
-MODEL = WhisperModel("medium", device="cpu", compute_type="int8")
-
-
-def download_video(url: str, output_name: str) -> None:
+def download_video(url: str, video_name: str) -> None:
     """
     Download a video from BiliBili using BBDown.
 
     Args:
         url (str): The BiliBili video URL.
-        output_name (str): The desired output file name.
+        video_name (str): The name to give the downloaded video.
     """
     print(f"📥 Downloading video from {video_url}...")
 
-    # Run BBDown executable with the provided URL and output name
-    cmd = ["./BBDown", url, "-F", output_name]
+    # Run BBDown executable with the provided URL and video name
+    cmd = ["./BBDown", url, "-F", f"{video_name}.mp4"]
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     if result.returncode == 0:
@@ -47,18 +41,21 @@ def format_time_srt(t: float) -> str:
     return f"{h:02}:{m:02}:{s:02},{ms:03}"
 
 
-def generate_srt_file(output_srt_file: str) -> None:
+def generate_srt_file(model: WhisperModel, video_name: str) -> None:
     """
-    Generate an SRT file from the downloaded video.
+    Generate an SRT file from the downloaded video using FasterWhisper.
 
     Args:
-        output_srt_file (str): The name of the output SRT file.
+        video_name (str): The name of the downloaded video.
+
+    Generates:
+        {video_name}.srt: SRT file with subtitles extracted from the video.
     """
     print("🏗️ Generating SRT file...")
 
     # Transcribe with word timestamps
-    segments, _info = MODEL.transcribe(
-        audio=DOWNLOADED_VIDEO_FILENAME,
+    segments, _info = model.transcribe(
+        audio=f"{video_name}.mp4",
         language="zh",
         beam_size=5,
         log_progress=True,
@@ -66,7 +63,7 @@ def generate_srt_file(output_srt_file: str) -> None:
     )
 
     # Write to SRT
-    with open(output_srt_file, "w", encoding="utf-8") as f:
+    with open(f"{video_name}.srt", "w", encoding="utf-8") as f:
         for i, segment in enumerate(segments, start=1):
             start = segment.start
             end = segment.end
@@ -80,18 +77,25 @@ def generate_srt_file(output_srt_file: str) -> None:
 
 
 if __name__ == "__main__":
-    # Take in URL as an argument
-    if len(sys.argv) < 2:
-        print("Usage: python download_and_subtitle.py <BiliBili video URL>")
+    # Take in video url and name as arguments
+    if len(sys.argv) < 3:
+        print(
+            "Usage: python download_and_subtitle.py <BiliBili video URL> <video name>"
+        )
         sys.exit(1)
     video_url = sys.argv[1]
+    video_name = sys.argv[2]
 
+    # Download the video
     try:
-        download_video(video_url, DOWNLOADED_VIDEO_FILENAME)
+        download_video(video_url, video_name)
     except Exception as e:
         print(f"Error downloading video: {e}")
 
+    # Extract subtitles and generate SRT file
     try:
-        generate_srt_file(OUTPUT_SRT_FILENAME)
+        # Load the model (choose "base", "small", "medium", or "large")
+        model = WhisperModel("medium", device="cpu", compute_type="int8")
+        generate_srt_file(model, video_name)
     except Exception as e:
         print(f"Error generating SRT file: {e}")
