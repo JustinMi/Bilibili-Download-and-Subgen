@@ -91,6 +91,7 @@ if __name__ == "__main__":
         download_video(video_url, video_name)
     except Exception as e:
         print(f"Error downloading video: {e}")
+        sys.exit(1)
 
     # Extract subtitles and generate SRT file
     try:
@@ -99,3 +100,4 @@ if __name__ == "__main__":
         generate_srt_file(model, video_name)
     except Exception as e:
         print(f"Error generating SRT file: {e}")
+        sys.exit(1)
