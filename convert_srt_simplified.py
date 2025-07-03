@@ -15,9 +15,6 @@ def convert_srt_to_simplified(input_path, output_path):
     ) as outfile:
         for line in infile:
             line = cc.convert(line)
-            # # Only convert lines that are not numbers or timestamps
-            # if line.strip() and not line.strip().isdigit() and "-->" not in line:
-            #     line = cc.convert(line)
             outfile.write(line)
 
 
