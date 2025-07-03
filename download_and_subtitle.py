@@ -1,6 +1,10 @@
 from faster_whisper import WhisperModel
+from opencc import OpenCC
 import subprocess
 import sys
+
+# Create a converter to Simplified
+cc = OpenCC("t2s")  # 't2s' = Traditional to Simplified
 
 
 def download_video(url: str, video_name: str) -> None:
@@ -68,10 +72,13 @@ def generate_srt_file(model: WhisperModel, video_name: str) -> None:
             start = segment.start
             end = segment.end
             text = segment.text.strip()
+            simplified_text = cc.convert(
+                text
+            )  # Ensure the text is converted to simplified Chinese
 
             f.write(f"{i}\n")
             f.write(f"{format_time_srt(start)} --> {format_time_srt(end)}\n")
-            f.write(f"{text}\n\n")
+            f.write(f"{simplified_text}\n\n")
 
     print("✅ SRT file generated successfully.")
 
