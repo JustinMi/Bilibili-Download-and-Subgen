@@ -2,3 +2,4 @@
 *.srt
 BBDown
 .DS_Store
+.python-version
