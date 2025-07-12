@@ -15,6 +15,12 @@ model = whisperx.load_model(
     language="zh",  # Specify the language for better accuracy
     device=device,
     compute_type=compute_type,
+    asr_options={
+        "segment_resolution": "sentence",  # Segment resolution for better alignment
+        "chunk_size": 15,  # Process in chunks of 15 seconds. Smaller chunks → finer-grained, shorter audio batches; larger chunks → faster processing but more chance of drifts/skipped speech.)
+        "log_prob_threshold": 0.8,  # log_prob_threshold can help filter nonsense transcriptions from real but low-confidence speech. Default is -1, closer to 0 is stricter.
+        "no_speech_threshold": 0.8,  # If the probability of the <|nospeech|> token is higher than this value AND the decoding has failed due to `logprob_threshold`, consider the segment as silence (default: 0.6)
+    },
 )
 
 
@@ -39,8 +45,6 @@ audio = whisperx.load_audio(audio_file)
 result = model.transcribe(
     audio,
     batch_size=2,  # Keep low to fit within 8GB RAM
-    segment_resolution="sentence",  # Segment resolution for better alignment
-    chunk_size=15,  # Process in chunks of 15 seconds. Smaller chunks → finer-grained, shorter audio batches; larger chunks → faster processing but more chance of drifts/skipped speech.)
 )
 
 # 2. Align whisper output
