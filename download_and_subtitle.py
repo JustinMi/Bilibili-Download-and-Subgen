@@ -63,7 +63,8 @@ def generate_srt_file(model: WhisperModel, video_name: str) -> None:
         language="zh",
         beam_size=5,
         log_progress=True,
-        no_speech_threshold=0.7,  # If the probability of the <|nospeech|> token is higher than this value AND the decoding has failed due to `logprob_threshold`, consider the segment as silence (default: 0.6)
+        log_prob_threshold=0.8,  # log_prob_threshold can help filter nonsense transcriptions from real but low-confidence speech. Default is -1, closer to 0 is stricter.
+        no_speech_threshold=0.8,  # If the probability of the <|nospeech|> token is higher than this value AND the decoding has failed due to `logprob_threshold`, consider the segment as silence (default: 0.6)
     )
 
     # Write to SRT
