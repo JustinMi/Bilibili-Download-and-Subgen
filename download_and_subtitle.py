@@ -6,6 +6,8 @@ import sys
 # Create a converter to Simplified
 cc = OpenCC("t2s")  # 't2s' = Traditional to Simplified
 
+SHARED_FOLDER = "shared_files"
+
 
 def download_video(url: str, video_name: str) -> None:
     """
@@ -15,10 +17,11 @@ def download_video(url: str, video_name: str) -> None:
         url (str): The BiliBili video URL.
         video_name (str): The name to give the downloaded video.
     """
-    print(f"📥 Downloading video from {video_url}...")
+    print(f"📥 Downloading video from {url}...")
 
     # Run BBDown executable with the provided URL and video name
-    cmd = ["./BBDown", url, "-F", f"{video_name}.mp4"]
+    output_path = f"{SHARED_FOLDER}/{video_name}.mp4"
+    cmd = ["./BBDown", url, "-F", output_path]
     result = subprocess.run(cmd, capture_output=True, text=True)
 
     if result.returncode == 0:
@@ -59,16 +62,17 @@ def generate_srt_file(model: WhisperModel, video_name: str) -> None:
 
     # Transcribe with word timestamps
     segments, _info = model.transcribe(
-        audio=f"{video_name}.mp4",
+        audio=f"{SHARED_FOLDER}/{video_name}.mp4",
         language="zh",
         beam_size=5,
         log_progress=True,
+        condition_on_previous_text=True,
         log_prob_threshold=0.8,  # log_prob_threshold can help filter nonsense transcriptions from real but low-confidence speech. Default is -1, closer to 0 is stricter.
         no_speech_threshold=0.8,  # If the probability of the <|nospeech|> token is higher than this value AND the decoding has failed due to `logprob_threshold`, consider the segment as silence (default: 0.6)
     )
 
     # Write to SRT
-    with open(f"{video_name}.srt", "w", encoding="utf-8") as f:
+    with open(f"{SHARED_FOLDER}/{video_name}.srt", "w", encoding="utf-8") as f:
         for i, segment in enumerate(segments, start=1):
             start = segment.start
             end = segment.end
@@ -104,7 +108,7 @@ if __name__ == "__main__":
     # Extract subtitles and generate SRT file
     try:
         # Load the model (choose "base", "small", "medium", or "large")
-        model = WhisperModel("medium", device="cpu", compute_type="int8")
+        model = WhisperModel("medium", device="cuda", compute_type="float16")
         generate_srt_file(model, video_name)
     except Exception as e:
         print(f"Error generating SRT file: {e}")
