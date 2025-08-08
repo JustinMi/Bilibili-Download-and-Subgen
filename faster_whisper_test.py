@@ -1,16 +1,24 @@
 from faster_whisper import WhisperModel
 
 # Load the model (choose "base", "small", "medium", or "large")
-model = WhisperModel("medium", device="cpu", compute_type="int8")
+model = WhisperModel("medium", device="cuda", compute_type="float16")
 
 # Set your input file path
-input_audio = "云南瑞丽香辣螃蟹，缅甸甩粑粑，傣寨香茅草排骨，阿星逛翡翠鬼市.mp4"
+input_audio = "island.mp4"
+final_path = f"shared_files/{input_audio}"
 
 # Transcribe with word timestamps (optional)
-segments, info = model.transcribe(input_audio, language="zh", beam_size=5)
+segments, info = model.transcribe(
+    final_path, 
+    language="zh",
+    beam_size=5,
+    condition_on_previous_text=True,
+    log_prob_threshold=0.8,  # log_prob_threshold can help filter nonsense transcriptions from real but low-confidence speech. Default is -1, closer to 0 is stricter.
+    no_speech_threshold=0.8,  # If the probability of the <|nospeech|> token is higher than this value AND the decoding has failed due to `logprob_threshold`, consider the segment as silence (default: 0.6)
+)
 
 # Write to SRT
-with open("output.srt", "w", encoding="utf-8") as f:
+with open("shared_files/output.srt", "w", encoding="utf-8") as f:
     for i, segment in enumerate(segments, start=1):
         start = segment.start
         end = segment.end
