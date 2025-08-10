@@ -12,7 +12,6 @@ if __name__ == "__main__":
         "shared_files/mihoyo_workplace.mp4",
         "shared_files/mihoyo_workplace.srt",
         lang="ch",
-        sim_threshold=80,
         use_gpu=True,
         # Confidence threshold for word predictions. Words with lower confidence than this value
         # will be discarded. Bump it up there are too many excess words, lower it if there are too
@@ -25,5 +24,5 @@ if __name__ == "__main__":
         # The number of frames to skip before sampling a frame for OCR. 1 means every frame will be
         # sampled, 2 means every other frame will be sampled, and so on. This can help reduce the
         # number of frames processed, which can speed up the OCR process.
-        frames_to_skip=0,
+        frames_to_skip=1,
     )
