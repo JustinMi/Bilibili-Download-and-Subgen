@@ -4,7 +4,7 @@ from faster_whisper import WhisperModel
 model = WhisperModel("medium", device="cuda", compute_type="float16")
 
 # Set your input file path
-input_audio = "island.mp4"
+input_audio = "mihoyo_workplace.mp4"
 final_path = f"shared_files/{input_audio}"
 
 # Transcribe with word timestamps (optional)
@@ -18,7 +18,7 @@ segments, info = model.transcribe(
 )
 
 # Write to SRT
-with open("shared_files/output.srt", "w", encoding="utf-8") as f:
+with open(f"shared_files/{input_audio}.srt", "w", encoding="utf-8") as f:
     for i, segment in enumerate(segments, start=1):
         start = segment.start
         end = segment.end
