@@ -9,8 +9,8 @@ CROP_HEIGHT = VIDEO_HEIGHT - CROP_X
 
 if __name__ == "__main__":
     save_subtitles_to_file(
-        "shared_files/leg.mp4",
-        "shared_files/leg6.srt",
+        "shared_files/mihoyo_workplace.mp4",
+        "shared_files/mihoyo_workplace.srt",
         lang="ch",
         sim_threshold=80,
         use_gpu=True,
@@ -22,6 +22,8 @@ if __name__ == "__main__":
         # brightness values range from 0 (black) to 255 (white). This can help improve accuracy when
         # performing OCR on videos with white subtitles.
         brightness_threshold=210,
-        similar_image_threshold=150,
+        # The number of frames to skip before sampling a frame for OCR. 1 means every frame will be
+        # sampled, 2 means every other frame will be sampled, and so on. This can help reduce the
+        # number of frames processed, which can speed up the OCR process.
         frames_to_skip=0,
     )
