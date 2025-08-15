@@ -105,11 +105,11 @@ if __name__ == "__main__":
         print(f"Error downloading video: {e}")
         sys.exit(1)
 
-    # # Extract subtitles and generate SRT file
-    # try:
-    #     # Load the model (choose "base", "small", "medium", or "large")
-    #     model = WhisperModel("medium", device="cuda", compute_type="float16")
-    #     generate_srt_file(model, video_name)
-    # except Exception as e:
-    #     print(f"Error generating SRT file: {e}")
-    #     sys.exit(1)
+    # Extract subtitles and generate SRT file
+    try:
+        # Load the model (choose "base", "small", "medium", or "large")
+        model = WhisperModel("medium", device="cuda", compute_type="float16")
+        generate_srt_file(model, video_name)
+    except Exception as e:
+        print(f"Error generating SRT file: {e}")
+        sys.exit(1)
