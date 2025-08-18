@@ -1,5 +1,7 @@
 *.mp4
 *.srt
+*.wav
+
 BBDown
 .DS_Store
 .python-version
