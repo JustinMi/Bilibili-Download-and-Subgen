@@ -44,6 +44,10 @@ if __name__ == "__main__":
     video_url = sys.argv[1]
     video_name = sys.argv[2]
 
+    # Clean the URL of trackers
+    parsed = urlparse(video_url)
+    clean_url = urlunparse((parsed.scheme, parsed.netloc, parsed.path, "", "", ""))
+
     # Download the video
     try:
         download_video(video_url, video_name)
