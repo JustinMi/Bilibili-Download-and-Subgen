@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     # Download the video
     try:
-        download_video(video_url, video_name)
+        download_video(clean_url, video_name)
     except Exception as e:
         print(f"Error downloading video: {e}")
         sys.exit(1)
