@@ -3,12 +3,20 @@ This script downloads a video from BiliBili using BBDown and generates subtitles
 videOCR.
 """
 
+import os
+import shutil
 import subprocess
 import sys
+import tempfile
+from urllib.parse import urlparse, urlunparse
 
+from opencc import OpenCC
 from videocr import save_subtitles_to_file
 
 DOWNLOAD_FOLDER = "downloaded_videos"
+
+# Create a converter to Simplified
+cc = OpenCC("t2s")  # 't2s' = Traditional to Simplified
 
 
 def download_video(url: str, video_name: str) -> None:
@@ -84,4 +92,34 @@ if __name__ == "__main__":
         print("✅ SRT file generated successfully.")
     except Exception as e:
         print(f"Error generating SRT file: {e}")
+        sys.exit(1)
+
+    # Convert SRT to Simplified Chinese
+    try:
+        print("🔄 Converting SRT to Simplified Chinese...")
+
+        srt_path = f"{DOWNLOAD_FOLDER}/{video_name}.srt"
+        lines = []
+
+        # Create a temp file in the same directory
+        dir_name = os.path.dirname(srt_path)
+        fd, temp_path = tempfile.mkstemp(dir=dir_name, suffix=".srt")
+        os.close(fd)
+
+        # Read the original SRT file and convert each line
+        # to Simplified Chinese, writing to the temp file
+        with (
+            open(srt_path, "r", encoding="utf-8") as src,
+            open(temp_path, "w", encoding="utf-8") as dst,
+        ):
+            for line in src:
+                dst.write(cc.convert(line))
+
+        # Atomically replace the original SRT file with the temp file
+        shutil.move(temp_path, srt_path)
+
+        print("✅ SRT file converted to Simplified Chinese successfully.")
+    except Exception as e:
+        print(f"Error converting SRT to simplified: {e}")
+        os.remove(temp_path)  # Clean up temp file if something goes wrong
         sys.exit(1)
