@@ -1,12 +1,13 @@
-from faster_whisper import WhisperModel
-from opencc import OpenCC
 import subprocess
 import sys
+
+from faster_whisper import WhisperModel
+from opencc import OpenCC
 
 # Create a converter to Simplified
 cc = OpenCC("t2s")  # 't2s' = Traditional to Simplified
 
-SHARED_FOLDER = "shared_files"
+DOWNLOAD_FOLDER = "downloaded_videos/"
 
 
 def download_video(url: str, video_name: str) -> None:
@@ -20,7 +21,7 @@ def download_video(url: str, video_name: str) -> None:
     print(f"📥 Downloading video from {url}...")
 
     # Run BBDown executable with the provided URL and video name
-    output_path = f"{SHARED_FOLDER}/{video_name}.mp4"
+    output_path = f"{DOWNLOAD_FOLDER}/{video_name}.mp4"
     cmd = ["./BBDown", url, "-F", output_path]
     result = subprocess.run(cmd, capture_output=True, text=True)
 
@@ -62,8 +63,8 @@ def generate_srt_file(model: WhisperModel, video_name: str) -> None:
 
     # Transcribe with word timestamps
     segments, _info = model.transcribe(
-        audio=f"{SHARED_FOLDER}/{video_name}.mp4",
-        language="zh",
+        audio=f"{DOWNLOAD_FOLDER}/{video_name}.mp4",
+        language="en",
         beam_size=5,
         log_progress=True,
         condition_on_previous_text=True,
@@ -72,7 +73,7 @@ def generate_srt_file(model: WhisperModel, video_name: str) -> None:
     )
 
     # Write to SRT
-    with open(f"{SHARED_FOLDER}/{video_name}.srt", "w", encoding="utf-8") as f:
+    with open(f"{DOWNLOAD_FOLDER}/{video_name}.srt", "w", encoding="utf-8") as f:
         for i, segment in enumerate(segments, start=1):
             start = segment.start
             end = segment.end
