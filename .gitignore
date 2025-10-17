@@ -2,6 +2,8 @@
 *.srt
 *.wav
 
+notes.md
+
 BBDown
 .DS_Store
 .python-version
