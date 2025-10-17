@@ -78,7 +78,7 @@ if __name__ == "__main__":
             # If set, pixels whose brightness are less than the threshold will be blackened out.
             # Valid brightness values range from 0 (black) to 255 (white). This can help improve
             # accuracy when performing OCR on videos with white subtitles.
-            brightness_threshold=225,
+            brightness_threshold=235,
             # The number of frames to skip before sampling a frame for OCR. 1 means every frame will
             # be sampled, 2 means every other frame will be sampled, and so on. This can help reduce
             # the number of frames processed, which can speed up the OCR process.
@@ -88,6 +88,14 @@ if __name__ == "__main__":
             # duplicated subtitle lines, or make it closer to 100 if you get too few subtitle lines.
             # Default is 80.
             sim_threshold=85,
+            # Specifies the bounding area in pixels for the portion of the frame that will be used
+            # for OCR. See image in the repo for reference.
+            # The crop tries to exclude any logos or watermarks in the bottom left and right hand
+            # corners of the video.
+            crop_x=290,
+            crop_y=865,
+            crop_width=1430,
+            crop_height=215,
         )
         print("✅ SRT file generated successfully.")
     except Exception as e:
