@@ -51,10 +51,6 @@ def download_video(url: str, video_name: str) -> None:
 
 
 def generate_srt_videocr(video_name: str) -> None:
-    """
-    Generate an SRT file from the downloaded video using videocr.
-    Preserves parameters and behavior from the videocr script.
-    """
     print("📝 Generating SRT file with videocr...")
     # Lazy import to avoid requiring videocr unless selected
     from videocr import save_subtitles_to_file
@@ -64,11 +60,27 @@ def generate_srt_videocr(video_name: str) -> None:
         f"{DOWNLOAD_FOLDER}/{video_name}.srt",
         lang="ch",
         use_gpu=True,
-        # videocr tuning parameters preserved from original script
+        # Confidence threshold for word predictions. Words with lower confidence than this value
+        # will be discarded. Bump it up there are too many excess words, lower it if there are
+        # too many missing words. Default is 75.
         conf_threshold=95,
+        # If set, pixels whose brightness are less than the threshold will be blackened out.
+        # Valid brightness values range from 0 (black) to 255 (white). This can help improve
+        # accuracy when performing OCR on videos with white subtitles.
         brightness_threshold=235,
+        # The number of frames to skip before sampling a frame for OCR. 1 means every frame will
+        # be sampled, 2 means every other frame will be sampled, and so on. This can help reduce
+        # the number of frames processed, which can speed up the OCR process.
         frames_to_skip=1,
+        # Similarity threshold for subtitle lines. Subtitle lines with larger Levenshtein ratios
+        # than this threshold will be merged together. Make it closer to 0 if you get too many
+        # duplicated subtitle lines, or make it closer to 100 if you get too few subtitle lines.
+        # Default is 80.
         sim_threshold=85,
+        # Specifies the bounding area in pixels for the portion of the frame that will be used
+        # for OCR. See image in the repo for reference.
+        # The crop tries to exclude any logos or watermarks in the bottom left and right hand
+        # corners of the video.
         crop_x=290,
         crop_y=865,
         crop_width=1430,
@@ -94,10 +106,6 @@ def format_time_srt(t: float) -> str:
 
 
 def generate_srt_whisper(video_name: str) -> None:
-    """
-    Generate an SRT file from the downloaded video using faster-whisper.
-    Conversion to Simplified Chinese happens in a separate step for consistency.
-    """
     print("📝 Generating SRT file with faster-whisper...")
     # Lazy import to avoid requiring faster-whisper unless selected
     from faster_whisper import WhisperModel
@@ -110,7 +118,11 @@ def generate_srt_whisper(video_name: str) -> None:
         beam_size=5,
         log_progress=True,
         condition_on_previous_text=True,
+        # log_prob_threshold can help filter nonsense transcriptions from real but low-confidence
+        # speech. Default is -1, closer to 0 is stricter.
         log_prob_threshold=0.8,
+        # If the probability of the <|nospeech|> token is higher than this value AND the decoding
+        # has failed due to `logprob_threshold`, consider the segment as silence (default: 0.6)
         no_speech_threshold=0.8,
     )
 
