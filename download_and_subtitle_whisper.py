@@ -1,3 +1,5 @@
+import os
+import shutil
 import subprocess
 import sys
 
@@ -113,4 +115,34 @@ if __name__ == "__main__":
         generate_srt_file(model, video_name)
     except Exception as e:
         print(f"Error generating SRT file: {e}")
+        sys.exit(1)
+
+    # Align subtitles with ffsubsync and replace original SRT (keeping name)
+    try:
+        print("🔄 Aligning subtitles with ffsubsync...")
+        video_path = f"{DOWNLOAD_FOLDER}/{video_name}.mp4"
+        srt_path = f"{DOWNLOAD_FOLDER}/{video_name}.srt"
+        synced_path = srt_path + ".synced"
+
+        result = subprocess.run(
+            ["ffs", video_path, "-i", srt_path, "-o", synced_path],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"ffs failed with exit code {result.returncode}: {result.stderr}"
+            )
+
+        # Replace original SRT with the synchronized one, keeping the original filename
+        shutil.move(synced_path, srt_path)
+        print("✅ Subtitles aligned successfully with ffs.")
+    except Exception as e:
+        # Clean up potential temp file if exists
+        try:
+            if "synced_path" in locals() and os.path.exists(synced_path):
+                os.remove(synced_path)
+        except Exception:
+            pass
+        print(f"Error aligning subtitles with ffs: {e}")
         sys.exit(1)
