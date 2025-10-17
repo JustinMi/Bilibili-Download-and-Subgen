@@ -7,8 +7,8 @@ Features:
 - Converts SRT to Simplified Chinese with OpenCC.
 - Aligns subtitles to the video using ffs, keeping the original SRT filename.
 
-Notes:
-- Defaults to videocr behavior when implementations differ.
+Usage:
+    python download_and_subtitle.py <BiliBili video URL> <video name> [--engine videocr|whisper]
 """
 
 import argparse
