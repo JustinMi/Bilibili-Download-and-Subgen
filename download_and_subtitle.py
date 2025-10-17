@@ -21,7 +21,9 @@ from urllib.parse import urlparse, urlunparse
 
 from opencc import OpenCC
 
-DOWNLOAD_FOLDER = "downloaded_videos"
+# Resolve paths relative to this script to avoid CWD issues
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+DOWNLOAD_FOLDER = os.path.join(ROOT_DIR, "downloaded_videos")
 
 # Create a converter to Simplified
 cc = OpenCC("t2s")  # 't2s' = Traditional to Simplified
@@ -37,8 +39,11 @@ def download_video(url: str, video_name: str) -> None:
     """
     print(f"📥 Downloading video from {url}...")
 
+    # Ensure download folder exists
+    os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
+
     # Run BBDown executable with the provided URL and video name
-    output_path = f"{DOWNLOAD_FOLDER}/{video_name}.mp4"
+    output_path = os.path.join(DOWNLOAD_FOLDER, f"{video_name}.mp4")
     cmd = ["./BBDown", url, "-F", output_path]
     result = subprocess.run(cmd, capture_output=True, text=True)
 
@@ -56,8 +61,8 @@ def generate_srt_videocr(video_name: str) -> None:
     from videocr import save_subtitles_to_file
 
     save_subtitles_to_file(
-        f"{DOWNLOAD_FOLDER}/{video_name}.mp4",
-        f"{DOWNLOAD_FOLDER}/{video_name}.srt",
+        os.path.join(DOWNLOAD_FOLDER, f"{video_name}.mp4"),
+        os.path.join(DOWNLOAD_FOLDER, f"{video_name}.srt"),
         lang="ch",
         use_gpu=True,
         # Confidence threshold for word predictions. Words with lower confidence than this value
@@ -113,7 +118,7 @@ def generate_srt_whisper(video_name: str) -> None:
     # Transcribe with word timestamps
     model = WhisperModel("medium", device="cuda", compute_type="float16")
     segments, _info = model.transcribe(
-        audio=f"{DOWNLOAD_FOLDER}/{video_name}.mp4",
+        audio=os.path.join(DOWNLOAD_FOLDER, f"{video_name}.mp4"),
         language="en",
         beam_size=5,
         log_progress=True,
@@ -127,7 +132,9 @@ def generate_srt_whisper(video_name: str) -> None:
     )
 
     # Write raw transcript to SRT; conversion to Simplified is a separate step
-    with open(f"{DOWNLOAD_FOLDER}/{video_name}.srt", "w", encoding="utf-8") as f:
+    with open(
+        os.path.join(DOWNLOAD_FOLDER, f"{video_name}.srt"), "w", encoding="utf-8"
+    ) as f:
         for i, segment in enumerate(segments, start=1):
             start = segment.start
             end = segment.end
@@ -140,7 +147,7 @@ def generate_srt_whisper(video_name: str) -> None:
 
 def convert_srt_to_simplified(video_name: str) -> None:
     print("🔄 Converting SRT to Simplified Chinese...")
-    srt_path = f"{DOWNLOAD_FOLDER}/{video_name}.srt"
+    srt_path = os.path.join(DOWNLOAD_FOLDER, f"{video_name}.srt")
     dir_name = os.path.dirname(srt_path)
     fd, temp_path = tempfile.mkstemp(dir=dir_name, suffix=".srt")
     os.close(fd)
@@ -166,15 +173,26 @@ def convert_srt_to_simplified(video_name: str) -> None:
 
 def align_subtitles_with_ffs(video_name: str) -> None:
     print("🔄 Aligning subtitles with ffs...")
-    video_path = f"{DOWNLOAD_FOLDER}/{video_name}.mp4"
-    srt_path = f"{DOWNLOAD_FOLDER}/{video_name}.srt"
-    synced_path = srt_path + ".synced"
+    # Work within the download folder to avoid relative path issues
+    video_base = f"{video_name}.mp4"
+    srt_base = f"{video_name}.srt"
+    synced_base = f"{video_name}.synced.srt"
+    srt_path = os.path.join(DOWNLOAD_FOLDER, srt_base)
+    synced_path = os.path.join(DOWNLOAD_FOLDER, synced_base)
 
     result = subprocess.run(
-        ["ffs", video_path, "-i", srt_path, "-o", synced_path],
+        ["ffs", video_base, "-i", srt_base, "-o", synced_base],
         capture_output=True,
         text=True,
+        cwd=DOWNLOAD_FOLDER,
     )
+
+    # Print ffs output to help diagnose issues
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, end="")
+
     if result.returncode != 0:
         # Clean up temp file if created
         try:
@@ -182,8 +200,13 @@ def align_subtitles_with_ffs(video_name: str) -> None:
                 os.remove(synced_path)
         except Exception:
             pass
+        raise RuntimeError(f"ffs failed with exit code {result.returncode}")
+
+    # Validate that ffs produced the expected output
+    if not os.path.exists(synced_path):
         raise RuntimeError(
-            f"ffs failed with exit code {result.returncode}: {result.stderr}"
+            "ffs reported success but did not produce the synchronized file: "
+            f"{synced_path}\nstdout: {result.stdout}\nstderr: {result.stderr}"
         )
 
     shutil.move(synced_path, srt_path)
