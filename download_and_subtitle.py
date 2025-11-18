@@ -209,7 +209,10 @@ def align_subtitles_with_ffs(video_name: str) -> None:
             f"{synced_path}\nstdout: {result.stdout}\nstderr: {result.stderr}"
         )
 
+    # Move synced file to original SRT path, keeping the original filename and replacing the old
+    # SRT file.
     shutil.move(synced_path, srt_path)
+
     print("✅ Subtitles aligned successfully with ffs.")
 
 
