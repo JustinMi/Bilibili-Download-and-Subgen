@@ -232,6 +232,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="videocr",
         help="Subtitle engine to use (default: videocr)",
     )
+    parser.add_argument(
+        "--download-only",
+        action="store_true",
+        help="Only download the video without generating subtitles",
+    )
     return parser
 
 
@@ -251,29 +256,30 @@ def main() -> None:
         print(f"Error downloading video: {e}")
         sys.exit(1)
 
-    # Generate SRT
-    try:
-        if args.engine == "videocr":
-            generate_srt_videocr(args.video_name)
-        else:
-            generate_srt_whisper(args.video_name)
-    except Exception as e:
-        print(f"Error generating SRT file: {e}")
-        sys.exit(1)
+    if not args.download_only:
+        # Generate SRT
+        try:
+            if args.engine == "videocr":
+                generate_srt_videocr(args.video_name)
+            else:
+                generate_srt_whisper(args.video_name)
+        except Exception as e:
+            print(f"Error generating SRT file: {e}")
+            sys.exit(1)
 
-    # Convert to Simplified Chinese
-    try:
-        convert_srt_to_simplified(args.video_name)
-    except Exception as e:
-        print(e)
-        sys.exit(1)
+        # Convert to Simplified Chinese
+        try:
+            convert_srt_to_simplified(args.video_name)
+        except Exception as e:
+            print(e)
+            sys.exit(1)
 
-    # Align with ffs and keep original filename
-    try:
-        align_subtitles_with_ffs(args.video_name)
-    except Exception as e:
-        print(f"Error aligning subtitles with ffs: {e}")
-        sys.exit(1)
+        # Align with ffs and keep original filename
+        try:
+            align_subtitles_with_ffs(args.video_name)
+        except Exception as e:
+            print(f"Error aligning subtitles with ffs: {e}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":
