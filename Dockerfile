@@ -9,6 +9,8 @@ RUN apt-get update && \
         ffmpeg \
         vim \
         git \
+        build-essential \
+        pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # -------- Install BBDown binary --------
@@ -21,6 +23,7 @@ WORKDIR /app
 
 # Install Python dependencies first (better layer caching)
 COPY requirements.txt .
+RUN python -m pip install --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy your code
