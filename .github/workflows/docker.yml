@@ -42,15 +42,15 @@ jobs:
         run: |
           set -euxo pipefail
 
-          # Basic sanity: python runs
-          docker run --rm localtest:latest python -c "import sys; print(sys.version)"
+          # Basic sanity: python runs (override entrypoint)
+          docker run --rm --entrypoint python localtest:latest -c "import sys; print(sys.version)"
 
-          # Optional sanity: bbdown exists (doesn't fail the job if it exits nonzero)
-          docker run --rm localtest:latest BBDown --help || true
+          # Optional sanity: bbdown exists (override entrypoint)
+          docker run --rm --entrypoint BBDown localtest:latest --help || true
 
-          # Optional sanity: key imports (edit/remove depending on your project)
-          docker run --rm localtest:latest python -c "import videocr; print('videocr import ok')"
-          docker run --rm localtest:latest python -c "from paddleocr import PaddleOCR; print('paddleocr import ok')"
+          # Optional sanity: key imports (override entrypoint)
+          docker run --rm --entrypoint python localtest:latest -c "import videocr; print('videocr import ok')"
+          docker run --rm --entrypoint python localtest:latest -c "import paddleocr; print('paddleocr import ok')"
 
       # If smoke test passed, rebuild & PUSH to GHCR with proper tags
       - name: Build and push to GHCR
