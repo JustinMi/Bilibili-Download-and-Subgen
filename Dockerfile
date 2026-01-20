@@ -33,4 +33,4 @@ COPY . .
 ENV PYTHONUNBUFFERED=1
 
 # Default entrypoint: run your script
-ENTRYPOINT ["python", "download_and_subtitle.py"]
+CMD ["bash", "-lc", "sleep infinity"]

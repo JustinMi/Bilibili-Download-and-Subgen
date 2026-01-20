@@ -45,10 +45,10 @@ jobs:
           # Basic sanity: python runs (override entrypoint)
           docker run --rm --entrypoint python localtest:latest -c "import sys; print(sys.version)"
 
-          # Optional sanity: bbdown exists (override entrypoint)
+          # Additional sanity: bbdown exists (override entrypoint)
           docker run --rm --entrypoint BBDown localtest:latest --help || true
 
-          # Optional sanity: key imports (override entrypoint)
+          # Additional sanity: key imports (override entrypoint)
           docker run --rm --entrypoint python localtest:latest -c "import videocr; print('videocr import ok')"
           docker run --rm --entrypoint python localtest:latest -c "import paddleocr; print('paddleocr import ok')"
 
