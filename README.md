@@ -38,6 +38,8 @@ Outputs are written to `downloaded_videos/`:
 - `<name>.mp4` (from BBDown)
 - `<name>.srt` (generated)
 
+Send the outputs using `runpodctl send <file name>`. It will give you a command to run on your home computer to receive the files.
+
 ## Notes & troubleshooting
 - videocr uses GPU PaddleOCR; faster-whisper uses GPU with `WhisperModel("medium", device="cuda", compute_type="float16")`. Ensure the container/host sees the GPU (`--gpus all` for Docker, correct drivers locally).
 - If BBDown is missing or not executable, downloads will fail; verify `./BBDown` exists and runs (`./BBDown --version`).
